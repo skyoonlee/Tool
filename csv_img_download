@@ -1,0 +1,34 @@
+import requests
+import json
+import pandas as pd
+import urllib.request
+import os
+from urllib.parse import urlparse
+
+df = pd.read_csv('서울관광재단_음식이미지정보_20211222.csv')
+image_column = df['음식이미지(URL)']
+
+save_dir = 'downloaded_images'
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
+
+# 각 URL에서 이미지 다운로드
+for i, url in enumerate(df['음식이미지(URL)']):
+    try:
+        parsed_url = urlparse(url)
+        # URL 경로에서 파일 확장자 추출
+        file_extension = os.path.splitext(parsed_url.path)[1]
+        
+        # 만약 확장자가 없거나 이상하면 .jpg로 기본 설정
+        if not file_extension or file_extension.lower() not in ['.jpg', '.jpeg', '.png', '.gif', '.webp']:
+            file_extension = '.jpg' # 기본값으로 .jpg 붙여주기
+
+        # 파일명 생성 (인덱스 번호 사용)
+        # 예: image_0.jpg, image_1.png
+        file_name = os.path.join(save_dir, f'image_{i}{file_extension}')
+        
+        # 이미지 다운로드
+        urllib.request.urlretrieve(url, file_name)
+        print(f"다운로드 완료: {url} -> {file_name}")
+    except Exception as e:
+        print(f"다운로드 실패: {url}, 오류: {e}")
